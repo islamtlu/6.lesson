@@ -7,7 +7,33 @@
 	//create connection
 	$mysql = new mysqli("localhost", $db_username, $db_password, "webpr2016_islam");
 	
-	//SQL sentence
+	/*
+		IF THERE IS ?DELETE=ROW_ID in the url
+	*/
+
+		if(isset($_GET["delete"])) {
+			
+			echo "Deleting row with id:".$_GET["delete"];
+			
+			// NOW () = current date-time
+			$stmt = $mysql->prepare("UPDATE debattle_request SET deleted=NOW() WHERE id = ?");
+			
+			// replace the ?
+			
+			$stmt->bind_param ("i", $_GET["delete"]);
+		
+			if ($stmt->execute()){
+				echo " Deleted successfully";
+			}else{
+				echo $stmt->error;
+			}
+			
+			//Closes the statement, so others can use connection
+			$stmt->close();
+		}
+	
+	
+	//SQL sentence // to show all results, remove ORDER 
 	$stmt = $mysql->prepare("SELECT id, challengee, motion, start_date, end_date, characters, created FROM debattle_request ORDER BY created LIMIT 10");
 	
 	//if error in sentence
@@ -33,10 +59,11 @@
 		$table_html .= "<th>End Date</th>"; //table header
 		$table_html .= "<th>Characters</th>"; //table header
 		$table_html .= "<th>Created</th>"; //table header
+		$table_html .= "<th>Delete?</th>"; //table header
 	$table_html .= "</tr>"; //table row closing
 	
 	// GET RESULTS
-	// we have multiple rows
+	// we have multiple rows, the while loop
 	while ($stmt->fetch()) {
 		
 		// Do SOMETHING FOR EACH ROW //the dots are actual spaces
@@ -48,7 +75,8 @@
 		$table_html .= "<td>" .$start_date. "</td>"; 
 		$table_html .= "<td>" .$end_date. "</td>"; 
 		$table_html .= "<td>" .$characters. "</td>"; 
-		$table_html .= "<td>" .$created. "</td>"; 
+		$table_html .= "<td>" .$created. "</td>";
+		$table_html .= "<td><a href='?delete=" .$id."'>X</a></td>";		
 	$table_html .= "</tr>"; //end row
 		
 	}
